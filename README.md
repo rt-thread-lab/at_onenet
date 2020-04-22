@@ -4,13 +4,16 @@
  * @Autor: liang.shao
  * @Date: 2020-04-22 10:07:49
  * @LastEditors: liang.shao
- * @LastEditTime: 2020-04-22 11:06:55
+ * @LastEditTime: 2020-04-22 11:07:58
  -->
 OneNet by AT commands
 ========================
+
 0.作用
 ------
 该软件包是[at_device](https://github.com/RT-Thread-packages/at_device)中bc26的一个增强包，添加了对bc26模组内部lwm2m协议的支持,目前整体只是简单的通过at_device_control接口发at命令来实现。
+
+
 1.目的
 ------
 rt-thread目前已经有了[支持mqtt的onenet软件包](https://github.com/RT-Thread-packages/onenet),而且实现的也比较好,支持断线重连,但是目前OneNet把mqtt协议弄成了旧版，新版本需要支持MQTTS，对于部分内存比较小的mcu来说不是太方便。
