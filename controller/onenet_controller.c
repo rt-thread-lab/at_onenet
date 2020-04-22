@@ -4,7 +4,7 @@
  * @Autor: liang.shao
  * @Date: 2020-04-20 15:30:26
  * @LastEditors: liang.shao
- * @LastEditTime: 2020-04-22 01:46:44
+ * @LastEditTime: 2020-04-22 11:20:37
  */
 
 #include "onenet_controller.h"
@@ -451,10 +451,10 @@ static rt_err_t onenet_event_process(onenet_event_msg_t *msg)
     case ONENET_EVENT_SRC_DISCOVER:
     {
         onenet_obj_t *obj = nb_onenet_get_object_ById(msg->event.type.objId);
-				
+
         if (obj != RT_NULL)
-        {		
-						LOG_I("discover obj %d",msg->event.type.objId);
+        {
+            LOG_I("discover obj %d", msg->event.type.objId);
             obj->discover_msgId = msg->event.type.msgId;
             onenet_discover_rsp(obj);
         }
@@ -636,6 +636,11 @@ int nb_onenet_close(void)
 {
     rt_uint32_t status;
     onenet_device_table.close_status = nb_onenet_status_close_start;
+#ifdef BC26_USE_ONENET_PROTOCOL
+    bc26_close_onenet();
+    bc26_disconnect_onenet();
+#endif
+
 #ifdef NB_ONENET_USING_DEBUG
     LOG_D("onenet will close");
 #endif

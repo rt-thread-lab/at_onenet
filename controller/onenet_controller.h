@@ -4,7 +4,7 @@
  * @Autor: liang.shao
  * @Date: 2020-04-21 10:08:45
  * @LastEditors: liang.shao
- * @LastEditTime: 2020-04-21 11:28:14
+ * @LastEditTime: 2020-04-22 11:22:05
  */
 #ifndef _ONENETCONTROLLER_H
 #define _ONENETCONTROLLER_H
@@ -40,7 +40,7 @@ extern "C"
     extern int nb_onenet_close(void);
     extern int nb_onenet_quick_start(void);
     extern int nb_onenet_get_connectiton_status(void);
-
+    extern int nb_onenet_close(void);
     //
     extern int nb_onenet_update_time(int flag);
     //int nb_onenet_notify_with_ack(onenet_res_t *res, int len, nb_onenet_value_t data, int flag);

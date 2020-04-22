@@ -28,6 +28,8 @@
 #include <board.h>
 #include <at_device_bc26.h>
 
+#include "bc26_onenet_port.h"
+
 #define LOG_TAG "at.dev.bc26"
 #include <at_log.h>
 
@@ -1103,6 +1105,31 @@ static int bc26_onenet_cmd_open(struct at_device *device, int *lifetime)
     }
 }
 
+static int bc26_onenet_cmd_close(struct at_device *device)
+{
+    at_response_t resp = RT_NULL;
+    struct at_device_bc26 *bc26 = RT_NULL;
+    bc26 = (struct at_device_bc26 *)device->user_data;
+    resp = at_create_resp(64, 0, rt_tick_from_millisecond(10000));
+    if (resp == RT_NULL)
+    {
+        LOG_E("no memory for bc26_onenet_open resp create.");
+        return (-RT_ERROR);
+    }
+
+    if (at_obj_exec_cmd(device->client, resp, "AT+MIPLCLOSE=0") == RT_EOK)
+    {
+        at_delete_resp(resp);
+        return (RT_EOK);
+    }
+    else
+    {
+        LOG_D("\"AT+MIPLCLOSE\" execute fail.");
+        at_delete_resp(resp);
+        return (-RT_ERROR);
+    }
+}
+
 // rt_uint32_t observeMsgId;
 
 static int bc26_onenet_cmd_notify(struct at_device *device, bc26_onenet_notify_data_t data)
@@ -1386,6 +1413,9 @@ static int bc26_control(struct at_device *device, int cmd, void *arg)
     case BC26_ONENET_DELETE:
         result = bc26_onenet_cmd_delete(device);
         break;
+    case BC26_ONENET_CLOSE:
+        result = bc26_onenet_cmd_close(device);
+        break;
     case BC26_ONENET_ADDOBJ:
         result = bc26_onenet_cmd_addobject(device, (bc26_onenet_add_obj_t)arg);
         break;
@@ -1393,9 +1423,6 @@ static int bc26_control(struct at_device *device, int cmd, void *arg)
         break;
     case BC26_ONENET_OPEN:
         result = bc26_onenet_cmd_open(device, (int *)arg);
-        break;
-    case BC26_ONENET_CLOSE:
-
         break;
     case BC26_ONENET_OBSERVERSP:
         result = bc26_onenet_cmd_observe_rsp(device, (bc26_onenet_ob_rsp_t)arg);

@@ -4,9 +4,8 @@
  * @Autor: liang.shao
  * @Date: 2020-04-20 16:29:04
  * @LastEditors: liang.shao
- * @LastEditTime: 2020-04-20 21:06:55
+ * @LastEditTime: 2020-04-22 11:15:50
  */
-
 
 #include "bc26_onenet_port.h"
 
@@ -27,6 +26,13 @@ int bc26_connect_onenet(void)
     struct at_device_bc26 *bc26 = &_dev;
     int *arg = 0;
     return at_device_control(&(bc26->device), BC26_ONENET_CREATE, arg);
+}
+
+int bc26_close_onenet(void)
+{
+    struct at_device_bc26 *bc26 = &_dev;
+    int *arg = 0;
+    return at_device_control(&(bc26->device), BC26_ONENET_CLOSE, arg);
 }
 
 int bc26_disconnect_onenet(void)

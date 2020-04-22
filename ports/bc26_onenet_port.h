@@ -4,7 +4,7 @@
  * @Autor: liang.shao
  * @Date: 2020-04-20 16:29:04
  * @LastEditors: liang.shao
- * @LastEditTime: 2020-04-21 10:41:14
+ * @LastEditTime: 2020-04-22 11:16:06
  */
 #include <rtthread.h>
 
@@ -18,12 +18,29 @@
 
 #define BC26_SAMPLE_DEIVCE_NAME "bc26"
 
+/* bc26 ONENET  opreations*/
+#ifdef BC26_USE_ONENET_PROTOCOL
+
+#define BC26_ONENET_CREATE 0x0100U
+#define BC26_ONENET_DELETE 0x0200U
+#define BC26_ONENET_ADDOBJ 0x0300U
+#define BC26_ONENET_DELOBJ 0x0400U
+#define BC26_ONENET_OPEN 0x0500U
+#define BC26_ONENET_CLOSE 0x0600U
+#define BC26_ONENET_NOTIFY 0x0700U
+#define BC26_ONENET_OBSERVERSP 0x0800U
+#define BC26_ONENET_DISCOVER 0x0900U
+#define BC26_ONENET_WRITERSP 0x0A00U
+#define BC26_ONENET_READRSP 0x0B00U
+#define BC26_ONENET_EXECUTERSP 0x0C00U
+#endif
 
 
 
 
 extern int bc26_connect_onenet(void);
 extern int bc26_disconnect_onenet(void);
+extern int bc26_close_onenet(void);
 extern int bc26_onenet_addobj(onenet_obj_t *object);
 extern int bc26_onenet_addobjs(rt_list_t *list);
 extern int bc26_onenet_open(int lifetime);
