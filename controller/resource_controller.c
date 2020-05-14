@@ -114,7 +114,7 @@ void nb_onenet_print_all_res(onenet_instance_t *instance)
 int nb_onenet_notify_res(onenet_res_t *res, int len, nb_onenet_value_t data, int flag, int index)
 {
 #ifdef BC26_USE_ONENET_PROTOCOL
-    if (bc26_onenet_notify(res, len, data, flag) != RT_EOK)
+    if (bc26_at_onenet_notify(res, len, data, flag) != RT_EOK)
     {
         LOG_E("onenet notify failed");
         return -RT_ERROR;

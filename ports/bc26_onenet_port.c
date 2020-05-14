@@ -21,6 +21,27 @@ struct at_device_bc26 _dev =
         BC26_SAMPLE_RECV_BUFF_LEN,
 };
 
+int bc26_reboot(void)
+{
+    struct at_device_bc26 *bc26 = &_dev;
+    int *arg = 0;
+    return at_device_control(&(bc26->device), AT_DEVICE_CTRL_RESET, arg);
+}
+
+int set_bc26_sleep(void)
+{
+    struct at_device_bc26 *bc26 = &_dev;
+    int *arg = 0;
+    return at_device_control(&(bc26->device), AT_DEVICE_CTRL_SLEEP, arg);
+}
+
+int set_bc26_wakeup(void)
+{
+    struct at_device_bc26 *bc26 = &_dev;
+    int *arg = 0;
+    return at_device_control(&(bc26->device), AT_DEVICE_CTRL_WAKEUP, arg);
+}
+
 int bc26_connect_onenet(void)
 {
     struct at_device_bc26 *bc26 = &_dev;
@@ -141,7 +162,7 @@ int bc26_onenet_read_rsp(int msgid, int result, onenet_res_t *res, int len, nb_o
     return at_device_control(&(bc26->device), BC26_ONENET_READRSP, (void *)(&rsp));
 }
 
-int bc26_onenet_notify(onenet_res_t *res, int len, nb_onenet_value_t data, int flag)
+int bc26_at_onenet_notify(onenet_res_t *res, int len, nb_onenet_value_t data, int flag)
 {
     struct at_device_bc26 *bc26 = &_dev;
 
@@ -161,7 +182,7 @@ int bc26_onenet_notify(onenet_res_t *res, int len, nb_onenet_value_t data, int f
     return at_device_control(&(bc26->device), BC26_ONENET_NOTIFY, (void *)(&notify_data));
 }
 
-int bc26_onenet_notify_with_ack(onenet_res_t *res, int len, nb_onenet_value_t data, int flag, int ackId)
+int bc26_at_onenet_notify_with_ack(onenet_res_t *res, int len, nb_onenet_value_t data, int flag, int ackId)
 {
     struct at_device_bc26 *bc26 = &_dev;
 

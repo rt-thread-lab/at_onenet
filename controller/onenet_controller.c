@@ -239,16 +239,18 @@ char *get_instance_resString(onenet_instance_t *instance)
  * @param {type} 
  * @return: 
  */
-int onenet_discover_rsp(onenet_obj_t *obj)
+int onenet_discover_rsp(int msgid, int objId)
 {
 #ifdef BC26_USE_ONENET_PROTOCOL
-    onenet_obj_t *object = obj;
+    onenet_obj_t *object = nb_onenet_get_object_ById(objId);
     int result = 1;
 
     if (object != RT_NULL)
     {
+        object->discover_msgId = msgid;
+       // LOG_I("the object discover msgId is %d", object->discover_msgId);
         result = 1;
-        onenet_instance_t *instance = get_first_instance(obj);
+        onenet_instance_t *instance = get_first_instance(object);
         if (instance != RT_NULL)
         {
             char *valueString = get_instance_resString(instance);
@@ -256,7 +258,7 @@ int onenet_discover_rsp(onenet_obj_t *obj)
             {
                 return -RT_ERROR;
             }
-            if (bc26_onenet_discover_rsp(object->discover_msgId, result, rt_strlen(valueString), valueString) != RT_EOK)
+            if (bc26_onenet_discover_rsp(msgid, result, rt_strlen(valueString), valueString) != RT_EOK)
             {
                 rt_free(valueString);
                 return -RT_ERROR;
@@ -450,14 +452,7 @@ static rt_err_t onenet_event_process(onenet_event_msg_t *msg)
     {
     case ONENET_EVENT_SRC_DISCOVER:
     {
-        onenet_obj_t *obj = nb_onenet_get_object_ById(msg->event.type.objId);
-
-        if (obj != RT_NULL)
-        {
-            LOG_I("discover obj %d", msg->event.type.objId);
-            obj->discover_msgId = msg->event.type.msgId;
-            onenet_discover_rsp(obj);
-        }
+        onenet_discover_rsp(msg->event.type.msgId, msg->event.type.objId);
     }
     break;
     case ONENET_EVENT_SRC_OBSERVE:
@@ -649,7 +644,7 @@ int nb_onenet_close(void)
         LOG_E("close onenet instance failure");
         return -RT_ERROR;
     }
-    LOG_D("close onenet instance success");
+    LOG_I("close onenet instance success");
     onenet_device_table.connect_status = nb_onenet_status_init;
     return RT_EOK;
 }
@@ -713,7 +708,7 @@ int nb_onenet_quick_start(void)
     return RT_EOK;
 
 __failure:
-    if (onenet_device_table.initstep > 5)
+    //if (onenet_device_table.initstep > 1)
     {
         nb_onenet_close();
     }
@@ -741,7 +736,7 @@ int nb_onenet_notify_res_with_ack(onenet_res_t *res, int len, nb_onenet_value_t 
 {
     rt_uint32_t status = 0;
 #ifdef BC26_USE_ONENET_PROTOCOL
-    if (bc26_onenet_notify_with_ack(res, len, data, flag, onenet_device_table.notify_ack) != RT_EOK)
+    if (bc26_at_onenet_notify_with_ack(res, len, data, flag, onenet_device_table.notify_ack) != RT_EOK)
     {
         LOG_E("onenet notify failed");
         return -RT_ERROR;

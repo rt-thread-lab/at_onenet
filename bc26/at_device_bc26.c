@@ -104,7 +104,7 @@ static int bc26_sleep(struct at_device *device)
     resp = at_create_resp(64, 0, rt_tick_from_millisecond(300));
     if (resp == RT_NULL)
     {
-        LOG_D("no memory for resp create.");
+        LOG_E("no memory for resp create.");
         return (-RT_ERROR);
     }
 
@@ -112,7 +112,7 @@ static int bc26_sleep(struct at_device *device)
     if (at_obj_exec_cmd(device->client, resp, "AT+QSCLK=1") != RT_EOK)
 
     {
-        LOG_D("enable sleep fail.\"AT+QSCLK=1\" execute fail.");
+        LOG_E("enable sleep fail.\"AT+QSCLK=1\" execute fail.");
         at_delete_resp(resp);
         return (-RT_ERROR);
     }
@@ -121,14 +121,14 @@ static int bc26_sleep(struct at_device *device)
     if (at_obj_exec_cmd(device->client, resp, "AT+CPSMS=1,,,\"01000011\",\"00000001\"") != RT_EOK)
 
     {
-        LOG_D("enable sleep fail.\"AT+CPSMS=1...\" execute fail.");
+        LOG_E("enable sleep fail.\"AT+CPSMS=1...\" execute fail.");
         at_delete_resp(resp);
         return (-RT_ERROR);
     }
 
     if (at_obj_exec_cmd(device->client, resp, "AT+QRELLOCK") != RT_EOK)
     {
-        LOG_D("startup entry into sleep fail.");
+        LOG_E("startup entry into sleep fail.");
         at_delete_resp(resp);
         return (-RT_ERROR);
     }
@@ -152,6 +152,7 @@ static int bc26_wakeup(struct at_device *device)
     }
     if (!bc26->sleep_status) //no sleep status
     {
+        LOG_E("no sleep status");
         return (RT_EOK);
     }
 
@@ -168,8 +169,9 @@ static int bc26_wakeup(struct at_device *device)
         rt_thread_mdelay(100);
         rt_pin_write(bc26->power_pin, PIN_LOW);
         rt_thread_mdelay(200);
+				rt_pin_write(bc26->power_pin, PIN_HIGH);
     }
-
+#if 1
     /* disable sleep mode */
     if (at_obj_exec_cmd(device->client, resp, "AT+QSCLK=0") != RT_EOK)
     {
@@ -185,7 +187,7 @@ static int bc26_wakeup(struct at_device *device)
         at_delete_resp(resp);
         return (-RT_ERROR);
     }
-
+#endif
     bc26->sleep_status = RT_FALSE;
 
     at_delete_resp(resp);
@@ -239,7 +241,7 @@ static int bc26_check_link_status(struct at_device *device)
     {
         if (at_obj_exec_cmd(device->client, resp, "AT+QRELLOCK") != RT_EOK)
         {
-            LOG_D("startup entry into sleep fail.");
+            LOG_E("startup entry into sleep fail.");
         }
     }
 
@@ -427,7 +429,7 @@ static int bc26_netdev_check_link_status(struct netdev *netdev)
     rt_snprintf(tname, RT_NAME_MAX, "%s", netdev->name);
 
     /* create bc26 link status polling thread  */
-    tid = rt_thread_create(tname, bc26_check_link_status_entry, (void *)netdev,
+    tid = rt_thread_create("bc26_link_check", bc26_check_link_status_entry, (void *)netdev,
                            BC26_LINK_THREAD_STACK_SIZE, BC26_LINK_THREAD_PRIORITY, BC26_LINK_THREAD_TICK);
     if (tid != RT_NULL)
     {
@@ -862,7 +864,7 @@ static void bc26_init_thread_entry(void *parameter)
         /* check and create link staus sync thread  */
         if (rt_thread_find(device->netdev->name) == RT_NULL)
         {
-            bc26_netdev_check_link_status(device->netdev);
+            //bc26_netdev_check_link_status(device->netdev);
         }
 
         LOG_I("%s device network initialize success.", device->name);
@@ -879,7 +881,7 @@ static int bc26_net_init(struct at_device *device)
 #ifdef AT_DEVICE_BC26_INIT_ASYN
     rt_thread_t tid;
 
-    tid = rt_thread_create("bc26_net", bc26_init_thread_entry, (void *)device,
+    tid = rt_thread_create("bc26_net_init", bc26_init_thread_entry, (void *)device,
                            BC26_THREAD_STACK_SIZE, BC26_THREAD_PRIORITY, 20);
     if (tid)
     {
@@ -1128,6 +1130,9 @@ static int bc26_onenet_cmd_close(struct at_device *device)
         at_delete_resp(resp);
         return (-RT_ERROR);
     }
+    
+
+
 }
 
 // rt_uint32_t observeMsgId;
@@ -1380,6 +1385,18 @@ static int bc26_onenet_cmd_execute_rsp(struct at_device *device, bc26_onenet_exe
 }
 
 #endif
+
+static int bc26_reboot(struct at_device *device)
+{
+    bc26_power_off(device);
+    rt_thread_mdelay(2000);
+    bc26_power_on(device);
+    device->is_init = RT_FALSE;
+    bc26_net_init(device);
+    device->is_init = RT_TRUE;
+    return RT_EOK;
+}
+
 static int bc26_control(struct at_device *device, int cmd, void *arg)
 {
     int result = -RT_ERROR;
@@ -1395,8 +1412,14 @@ static int bc26_control(struct at_device *device, int cmd, void *arg)
         result = bc26_wakeup(device);
         break;
     case AT_DEVICE_CTRL_POWER_ON:
+        bc26_power_on(device);
+        break;
     case AT_DEVICE_CTRL_POWER_OFF:
+        bc26_power_off(device);
+        break;
     case AT_DEVICE_CTRL_RESET:
+        bc26_reboot(device);
+        break;
     case AT_DEVICE_CTRL_LOW_POWER:
     case AT_DEVICE_CTRL_NET_CONN:
     case AT_DEVICE_CTRL_NET_DISCONN:
@@ -1438,6 +1461,7 @@ static int bc26_control(struct at_device *device, int cmd, void *arg)
         break;
     case BC26_ONENET_READRSP:
         result = bc26_onenet_cmd_read_rsp(device, (bc26_onenet_readrsp_t)arg);
+		break;
     case BC26_ONENET_EXECUTERSP:
         result = bc26_onenet_cmd_execute_rsp(device, (bc26_onenet_executersp_t)arg);
         break;

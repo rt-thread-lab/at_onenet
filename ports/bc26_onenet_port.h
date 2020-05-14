@@ -51,6 +51,8 @@ extern int bc26_onenet_write_rsp(int msgid, int result);
 extern int bc26_onenet_read_rsp(int msgid, int result, onenet_res_t *res, int len, nb_onenet_value_t data);
 extern int bc26_onenet_execute_rsp(int msgid, int result);
 
-extern int bc26_onenet_notify(onenet_res_t *res, int len, nb_onenet_value_t data, int flag);
-extern int bc26_onenet_notify_with_ack(onenet_res_t *res, int len, nb_onenet_value_t data, int flag, int ackId);
+extern int bc26_at_onenet_notify(onenet_res_t *res, int len, nb_onenet_value_t data, int flag);
+extern int bc26_at_onenet_notify_with_ack(onenet_res_t *res, int len, nb_onenet_value_t data, int flag, int ackId);
 
+extern int set_bc26_sleep(void);
+extern int set_bc26_wakeup(void);
